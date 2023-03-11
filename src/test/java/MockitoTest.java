@@ -7,8 +7,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
+import org.mockito.stubbing.Stubber;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -19,6 +23,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -337,5 +342,56 @@ public class MockitoTest {
         // 다음처럼 하면 오버라이딩이 되므로 모든 메소드는 30을 리턴한다.
 //        when(calculator.plus(10))
 //                .thenReturn(10);
+    }
+
+    @Test
+    @DisplayName("Stubbing with callbacks")
+    void stubbingWithCallBack() {
+        // thenReturn(), thenThrow() 만으로 테스트코드를 충분히 작성할 수 있다.
+        // 이 기능은 아직 논쟁의 여지가 있음.
+        List mock = mock(List.class);
+        when(mock.add(anyString())).thenAnswer(
+                new Answer<Object>() { // mock 객체와 협력했을 때, 수행될 Action 그리고 반환값을 명시
+                    @Override
+                    public Object answer(InvocationOnMock invocation) throws Throwable {
+                        Object[] args = invocation.getArguments();
+                        Object mock = invocation.getMock();
+                        return "called with arguments: " + Arrays.toString(args);
+                    }
+                }
+        );
+
+        System.out.println(mock.add("foo"));
+
+    }
+
+    @Test
+    @DisplayName("Stubbing void methods")
+    void stubbingVoidMethods() {
+        // void 를 return 하는 메서드는 다른 방법으로 stubbing 한다.
+        List mockedList = mock(List.class);
+        doThrow(new RuntimeException()).when(mockedList).clear();
+
+        // RuntimeError 발생
+        mockedList.clear();
+
+    }
+
+    @Test
+    @DisplayName("doReturn, doThrow, doAnswer, doNothing, doCallRealMethod")
+    void stubbingDoMethods() {
+        List mockedList = mock(List.class);
+
+        // 방법1 (런타임오류발생)-> void mockedList.clear()를 Stubbing 할 수 있지만, void 메소드는 반환값을 return 하도록 Stubbing하면 안됌
+        doReturn(true).when(mockedList).clear();
+
+        // 방법2 (컴파일에러발생) -> void mockedList.clear() Stubbing 불가
+//        when(mockedList.clear()).thenReturn(true);
+
+        // 방법1은 mockedList.clear()가 수행되지 않고
+        // 방법2는 mockedList.clear()가 수행된다.
+        // 방법2에서 when() 메소드의 파라미터는 T Method인데, mockedList.clear()의 반환값이 없으므로 에러가 발생한다.
+
+        mockedList.clear();
     }
 }
