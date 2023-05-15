@@ -10,7 +10,7 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
-import org.mockito.stubbing.Stubber;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -31,7 +31,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -274,24 +273,6 @@ public class MockitoTest {
         // firstMock -> secondMock 순서대로 호출됐음을 검증한다.
         inOrder.verify(firstMock).add("was called first");
         inOrder.verify(secondMock).add("was called second");
-    }
-
-    @Test
-    @DisplayName("어떤 일이 발생하지 않음을 검증한다.")
-    void neverHappenedVerification() {
-        List mockOne = mock(List.class);
-        List mockTwo = mock(List.class);
-        List mockThree = mock(List.class);
-
-        mockOne.add("one");
-
-        verify(mockOne).add("one");
-
-        // 메서드가 호출되지 않음을 검증한다.
-        verify(mockOne, never()).add("two");
-
-        // mockTwo, mockThree 가 사용되지 않음을 검증한다.
-        verifyZeroInteractions(mockTwo, mockThree);
     }
 
     @Test
